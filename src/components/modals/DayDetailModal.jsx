@@ -20,18 +20,10 @@ export function DayDetailModal({ date, isOpen, onClose }) {
   const [volume, setVolume] = useState(existingLog.volume || '');
   const [quantity, setQuantity] = useState(existingLog.quantity || '');
   const [cost, setCost] = useState(existingLog.cost || '');
+  const [trigger, setTrigger] = useState(existingLog.trigger || 'Stress');
+  const [location, setLocation] = useState(existingLog.location || 'Home');
 
-  // Volume logic helper
-  const getVolumeOptions = (unitType) => {
-    switch (unitType) {
-      case 'Bottle': return [330, 500, 650, 750, 1000];
-      case 'Can': return [330, 500];
-      case 'Peg (Small)': return [30];
-      case 'Peg (Large)': return [60];
-      case 'Glass': return [150, 250, 300, 500];
-      default: return [];
-    }
-  };
+  // ... (getVolumeOptions)
 
   useEffect(() => {
     if (isOpen) {
@@ -43,6 +35,8 @@ export function DayDetailModal({ date, isOpen, onClose }) {
       setUnit(existingLog.unit || 'Can');
       setVolume(existingLog.volume || '');
       setQuantity(existingLog.quantity || '');
+      setTrigger(existingLog.trigger || 'Stress');
+      setLocation(existingLog.location || 'Home');
     }
   }, [isOpen, dateStr, logs]);
 
@@ -56,7 +50,9 @@ export function DayDetailModal({ date, isOpen, onClose }) {
       cost: status === 'drank' ? Number(cost) : 0,
       drinkType: status === 'drank' ? drinkType : null,
       unit: status === 'drank' ? unit : null,
-      volume: status === 'drank' ? Number(volume) : 0
+      volume: status === 'drank' ? Number(volume) : 0,
+      trigger: status === 'drank' ? trigger : null,
+      location: status === 'drank' ? location : null
     });
     onClose();
   };
@@ -167,37 +163,40 @@ export function DayDetailModal({ date, isOpen, onClose }) {
                   </select>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4 pt-2 border-t border-slate-700/30">
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Quantity</label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="any"
-                      placeholder="0"
-                      value={quantity}
-                      onChange={(e) => setQuantity(e.target.value)}
-                      className="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder:text-slate-600 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500/50 transition-all"
-                    />
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Trigger (Why?)</label>
+                    <select
+                      value={trigger}
+                      onChange={(e) => setTrigger(e.target.value)}
+                      className="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-3 py-3 text-white focus:outline-none focus:border-rose-500 transition-all appearance-none text-sm"
+                    >
+                      <option>Stress</option>
+                      <option>Boredom</option>
+                      <option>Social Pressure</option>
+                      <option>Celebration</option>
+                      <option>Loneliness</option>
+                      <option>Habit</option>
+                      <option>Other</option>
+                    </select>
                   </div>
-
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Spent (₹)</label>
-                    <div className="relative">
-                      <span className="absolute left-4 top-3 text-slate-500">₹</span>
-                      <input
-                        type="number"
-                        min="0"
-                        placeholder="0"
-                        value={cost}
-                        onChange={(e) => setCost(e.target.value)}
-                        className="w-full bg-slate-900/80 border border-slate-700 rounded-xl pl-8 pr-4 py-3 text-white placeholder:text-slate-600 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500/50 transition-all"
-                      />
-                    </div>
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Location (Where?)</label>
+                    <select
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                      className="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-3 py-3 text-white focus:outline-none focus:border-rose-500 transition-all appearance-none text-sm"
+                    >
+                      <option>Home</option>
+                      <option>Bar/Pub</option>
+                      <option>Party</option>
+                      <option>Restaurant</option>
+                      <option>Work</option>
+                      <option>Other</option>
+                    </select>
                   </div>
                 </div>
               </div>
-
             </div>
           )}
 

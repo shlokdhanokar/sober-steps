@@ -11,7 +11,8 @@ import { SOSModal } from './components/modals/SOSModal';
 import { ShareModal } from './components/modals/ShareModal';
 import { YearViewModal } from './components/modals/YearViewModal';
 import { QuickGoalModal } from './components/modals/QuickGoalModal';
-import { WineOff, Settings as SettingsIcon, MoreVertical, TrendingUp, Heart, LifeBuoy, Share2, Grid } from 'lucide-react';
+import { DailyPledge } from './components/DailyPledge';
+import { WineOff, Settings as SettingsIcon, MoreVertical, TrendingUp, Heart, LifeBuoy, Share2, Grid, Star } from 'lucide-react';
 
 function AppContent() {
   const { settings } = useTracker();
@@ -49,10 +50,16 @@ function AppContent() {
             <WineOff className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-100 to-slate-400 tracking-tight">
+            <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-100 to-slate-400 tracking-tight leading-none mb-1">
               Sober Steps
             </h1>
-            <p className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">Your Journey</p>
+            <div className="flex items-center gap-2">
+              <p className="text-[10px] uppercase tracking-widest text-slate-500 font-semibold">Your Journey</p>
+              <div className="flex items-center gap-1 bg-amber-500/10 px-1.5 py-0.5 rounded-full border border-amber-500/20">
+                <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
+                <span className="text-[9px] font-black text-amber-200">LVL {settings.level || 1}</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -122,6 +129,7 @@ function AppContent() {
 
       <main className="w-full max-w-lg space-y-2 relative z-0">
         <QuoteWidget />
+        <DailyPledge />
         <StatsBoard onSetGoal={() => setIsQuickGoalOpen(true)} />
         <CalendarView />
         <BadgeList />

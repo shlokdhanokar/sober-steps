@@ -114,9 +114,10 @@ export function StatsModal({ isOpen, onClose }) {
         {/* Danger Zone Analytics */}
         <div className="bg-gradient-to-br from-indigo-900/40 to-indigo-900/10 p-6 rounded-3xl border border-indigo-500/20">
           <h3 className="text-sm font-medium text-indigo-300 mb-6 flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4" /> Danger Zone
+            <AlertTriangle className="w-4 h-4" /> Danger Zone Analytics
           </h3>
-          <div className="grid grid-cols-2 gap-6">
+
+          <div className="grid grid-cols-2 gap-8 mb-8">
             <div className="space-y-1">
               <span className="text-xs text-indigo-400/60 uppercase tracking-widest font-semibold">Toughest Day</span>
               <div className="flex items-baseline gap-2">
@@ -148,6 +149,62 @@ export function StatsModal({ isOpen, onClose }) {
                     return acc;
                   }, {})).sort((a, b) => b[1] - a[1])[0]?.[0] || 'None'
                 }</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <h4 className="text-[10px] uppercase tracking-[0.2em] text-indigo-400/50 font-black">Top Triggers (The "Why")</h4>
+              <div className="space-y-2">
+                {Object.entries(useTracker().getStats().triggerStats).length > 0 ? (
+                  Object.entries(useTracker().getStats().triggerStats)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 3)
+                    .map(([name, count]) => (
+                      <div key={name} className="flex items-center justify-between group">
+                        <span className="text-xs text-slate-300 group-hover:text-white transition-colors">{name}</span>
+                        <div className="flex items-center gap-2">
+                          <div className="h-1.5 w-24 bg-slate-800 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-rose-500 rounded-full"
+                              style={{ width: `${(count / Object.values(useTracker().getStats().triggerStats).reduce((a, b) => a + b, 0)) * 100}%` }}
+                            />
+                          </div>
+                          <span className="text-[10px] font-bold text-rose-400 w-4">{count}</span>
+                        </div>
+                      </div>
+                    ))
+                ) : (
+                  <div className="text-xs text-slate-500 italic">No triggers recorded yet. Keep it up!</div>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-4 pt-4 border-t border-indigo-500/10">
+              <h4 className="text-[10px] uppercase tracking-[0.2em] text-indigo-400/50 font-black">Top Locations (The "Where")</h4>
+              <div className="space-y-2">
+                {Object.entries(useTracker().getStats().locationStats).length > 0 ? (
+                  Object.entries(useTracker().getStats().locationStats)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 3)
+                    .map(([name, count]) => (
+                      <div key={name} className="flex items-center justify-between group">
+                        <span className="text-xs text-slate-300 group-hover:text-white transition-colors">{name}</span>
+                        <div className="flex items-center gap-2">
+                          <div className="h-1.5 w-24 bg-slate-800 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-indigo-500 rounded-full"
+                              style={{ width: `${(count / Object.values(useTracker().getStats().locationStats).reduce((a, b) => a + b, 0)) * 100}%` }}
+                            />
+                          </div>
+                          <span className="text-[10px] font-bold text-indigo-400 w-4">{count}</span>
+                        </div>
+                      </div>
+                    ))
+                ) : (
+                  <div className="text-xs text-slate-500 italic">No locations recorded yet. Stay safe!</div>
+                )}
               </div>
             </div>
           </div>

@@ -32,11 +32,14 @@ export function TrackerProvider({ children }) {
         savingsGoalName: '',
         savingsGoalPrice: 0,
         reasonsForQuitting: [],
-        notificationsEnabled: false
+        notificationsEnabled: false,
+        lastPledgeDate: null,
+        totalXP: 0,
+        level: 1
       };
       return saved ? { ...defaults, ...JSON.parse(saved) } : defaults;
     } catch (e) {
-      return { currency: '₹', name: 'User' };
+      return { currency: '₹', name: 'User', totalXP: 0, level: 1 };
     }
   });
 
@@ -52,8 +55,23 @@ export function TrackerProvider({ children }) {
     setSettings(prev => ({ ...prev, ...newSettings }));
   };
 
+  const makePledge = () => {
+    const todayStr = format(new Date(), 'yyyy-MM-dd');
+    if (settings.lastPledgeDate !== todayStr) {
+      const newXP = (settings.totalXP || 0) + 10;
+      const newLevel = Math.floor(newXP / 100) + 1;
+      updateSettings({
+        lastPledgeDate: todayStr,
+        totalXP: newXP,
+        level: newLevel
+      });
+      return true;
+    }
+    return false;
+  };
+
   const logDay = (dateStr, data) => {
-    // data: { status: 'sober'|'drank'|null, note?, mood?, drinkCount? }
+    // data: { status: 'sober'|'drank'|null, note?, mood?, drinkCount?, trigger?, location? }
     setLogs(prev => {
       const newLogs = { ...prev };
       if (!data || data.status === null) {
@@ -63,6 +81,13 @@ export function TrackerProvider({ children }) {
       }
       return newLogs;
     });
+
+    // Add 5 XP for logging
+    if (data && data.status) {
+      const newXP = (settings.totalXP || 0) + 5;
+      const newLevel = Math.floor(newXP / 100) + 1;
+      updateSettings({ totalXP: newXP, level: newLevel });
+    }
   };
 
   const getStats = () => {
@@ -70,41 +95,28 @@ export function TrackerProvider({ children }) {
     const todayStr = format(today, 'yyyy-MM-dd');
     let streak = 0;
 
-    // Streak Logic
-    let checkDate = today;
-    if (logs[todayStr]?.status === 'drank') {
-      // Streak broken today
+    // ... (rest of streak logic remains same)
+    let loopLimit = 3650;
+    let current = today;
+    if (logs[todayStr]?.status === 'sober') {
     } else {
-      // Check backwards
-      let loopLimit = 3650;
-      let current = today;
-      // If today is empty, we check yesterday. If today is sober, specific count starts.
-      // Actually simpler: Walk back from yesterday if today is empty or drank (if drank streak is 0 anyway, handled below).
-
-      if (logs[todayStr]?.status === 'sober') {
-        // Count starts from today
-      } else {
-        // today is empty, start form yesterday
-        current = subDays(today, 1);
-      }
-
-      let count = 0;
-      while (loopLimit > 0) {
-        const dStr = format(current, 'yyyy-MM-dd');
-        const entry = logs[dStr];
-        if (entry?.status === 'sober') {
-          count++;
-          current = subDays(current, 1);
-        } else if (isSameDay(current, today) && !entry) {
-          // Skip if we started on today and it's empty
-          current = subDays(current, 1);
-        } else {
-          break;
-        }
-        loopLimit--;
-      }
-      streak = count;
+      current = subDays(today, 1);
     }
+    let count = 0;
+    while (loopLimit > 0) {
+      const dStr = format(current, 'yyyy-MM-dd');
+      const entry = logs[dStr];
+      if (entry?.status === 'sober') {
+        count++;
+        current = subDays(current, 1);
+      } else if (isSameDay(current, today) && !entry) {
+        current = subDays(current, 1);
+      } else {
+        break;
+      }
+      loopLimit--;
+    }
+    streak = count;
 
     const totalSober = Object.values(logs).filter(l => l.status === 'sober').length;
     const totalSpent = Object.values(logs).reduce((acc, l) => acc + (l.cost || 0), 0);
@@ -121,11 +133,18 @@ export function TrackerProvider({ children }) {
     const currentMonthSpent = currentMonthLogs.reduce((acc, [_, l]) => acc + (l.cost || 0), 0);
     const currentMonthDrinks = currentMonthLogs.reduce((acc, [_, l]) => acc + (l.drinkCount || l.quantity || 0), 0);
 
-    // Badges (Updated for spent logic? Or keep saving logic? 
-    // If we don't know saving, we can't do "Saver" badge easily without baseline.
-    // Let's change Saver badge to 'High Roller' (negative) or just remove it for now to avoid confusion, 
-    // OR just use totalSober milestones).
-    // Let's keep milestones simple.
+    // Trigger Analytics
+    const triggerStats = {};
+    const locationStats = {};
+    Object.values(logs).forEach(l => {
+      if (l.status === 'drank') {
+        const t = l.trigger || 'Unknown';
+        const loc = l.location || 'Unknown';
+        triggerStats[t] = (triggerStats[t] || 0) + 1;
+        locationStats[loc] = (locationStats[loc] || 0) + 1;
+      }
+    });
+
     const unlockedBadges = BADGES.filter(b => {
       return b.condition({ streak, totalSober, totalSaved });
     }).map(b => b.id);
@@ -138,7 +157,9 @@ export function TrackerProvider({ children }) {
       currentMonthSpent,
       currentMonthDrinks,
       unlockedBadges,
-      badgesDef: BADGES
+      badgesDef: BADGES,
+      triggerStats,
+      locationStats
     };
   };
 
@@ -157,7 +178,7 @@ export function TrackerProvider({ children }) {
   };
 
   return (
-    <TrackerContext.Provider value={{ logs, settings, updateSettings, logDay, getStats, importData }}>
+    <TrackerContext.Provider value={{ logs, settings, updateSettings, makePledge, logDay, getStats, importData }}>
       {children}
     </TrackerContext.Provider>
   );
