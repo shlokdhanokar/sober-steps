@@ -54,9 +54,8 @@ export function SettingsModal({ isOpen, onClose }) {
 
         <div className="p-6 space-y-8 overflow-y-auto flex-1 custom-scrollbar">
 
-          {/* Profile Section */}
           <section className="space-y-4">
-            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Profile</h4>
+            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Profile & Life Gains</h4>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-xs font-medium text-slate-400">Your Name</label>
@@ -78,21 +77,57 @@ export function SettingsModal({ isOpen, onClose }) {
                 />
               </div>
             </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-slate-400" title="Average calories per drink">Avg. Cal/Drink</label>
+                <input
+                  type="number"
+                  value={formData.caloriesPerDrink || ''}
+                  onChange={(e) => setFormData({ ...formData, caloriesPerDrink: Number(e.target.value) })}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:border-indigo-500 transition-all font-medium"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-slate-400" title="Average hours spent per session">Avg. Hours/Session</label>
+                <input
+                  type="number"
+                  step="0.5"
+                  value={formData.timePerDrink || ''}
+                  onChange={(e) => setFormData({ ...formData, timePerDrink: Number(e.target.value) })}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:border-indigo-500 transition-all font-medium"
+                />
+              </div>
+            </div>
           </section>
 
           {/* SOS Section */}
           <section className="space-y-4 pt-4 border-t border-slate-800/50">
             <div className="flex items-center gap-2">
               <LifeBuoy className="w-4 h-4 text-rose-400" />
-              <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Cravings "Why" List</h4>
+              <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest">SOS & Support</h4>
             </div>
-            <textarea
-              rows="3"
-              placeholder="Why are you doing this? (One reason per line)..."
-              value={Array.isArray(formData.reasonsForQuitting) ? formData.reasonsForQuitting.join('\n') : ''}
-              onChange={(e) => setFormData({ ...formData, reasonsForQuitting: e.target.value.split('\n') })}
-              className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:border-rose-500 transition-all resize-none"
-            />
+
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-slate-400">Cravings "Why" List (One per line)</label>
+              <textarea
+                rows="3"
+                placeholder="Why are you doing this?..."
+                value={Array.isArray(formData.reasonsForQuitting) ? formData.reasonsForQuitting.join('\n') : ''}
+                onChange={(e) => setFormData({ ...formData, reasonsForQuitting: e.target.value.split('\n') })}
+                className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:border-rose-500 transition-all resize-none"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-slate-400">Emergency Contacts (Name:Number, one per line)</label>
+              <textarea
+                rows="2"
+                placeholder="Name:1234567890"
+                value={Array.isArray(formData.emergencyContacts) ? formData.emergencyContacts.join('\n') : ''}
+                onChange={(e) => setFormData({ ...formData, emergencyContacts: e.target.value.split('\n').filter(Boolean) })}
+                className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:border-rose-500 transition-all resize-none"
+              />
+            </div>
           </section>
 
           {/* Data Management */}

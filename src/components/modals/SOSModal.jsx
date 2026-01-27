@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Heart, Wind, LifeBuoy } from 'lucide-react';
+import { X, Heart, Wind, LifeBuoy, Phone, Gamepad2, Coffee } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTracker } from '../../context/TrackerContext';
 
@@ -72,6 +72,51 @@ export function SOSModal({ isOpen, onClose }) {
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <span className="text-xs font-bold uppercase tracking-[0.2em] text-white/50 mb-1">{phase}</span>
               <span className="text-4xl font-black text-white">{seconds}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* SOS Contacts & Distractions */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-4 text-left">
+            <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">
+              <Phone className="w-3 h-3 text-rose-500" /> Help 24/7
+            </h4>
+            <div className="bg-slate-900/50 border border-slate-800 rounded-3xl p-4 space-y-3">
+              {(settings.emergencyContacts || []).map((contact, idx) => {
+                const [name, phone] = contact.split(':');
+                return (
+                  <a key={idx} href={`tel:${phone}`} className="flex items-center justify-between p-2 hover:bg-slate-800 rounded-xl transition-colors group">
+                    <span className="text-xs font-bold text-slate-300 group-hover:text-white">{name}</span>
+                    <div className="p-1.5 bg-rose-500/10 rounded-lg text-rose-500 group-hover:bg-rose-500 group-hover:text-white transition-all">
+                      <Phone className="w-3.5 h-3.5" />
+                    </div>
+                  </a>
+                );
+              })}
+              {(!settings.emergencyContacts || settings.emergencyContacts.length === 0) && (
+                <p className="text-[10px] text-slate-600 italic">No contacts added. Set them in settings!</p>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-4 text-left">
+            <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2 px-1">
+              <Gamepad2 className="w-3 h-3 text-indigo-500" /> Distract
+            </h4>
+            <div className="bg-slate-900/50 border border-slate-800 rounded-3xl p-4 space-y-3">
+              {[
+                { label: 'Walk (5m)', icon: Wind },
+                { label: 'Gaming', icon: Gamepad2 },
+                { label: 'Drink Water', icon: Coffee }
+              ].map((activity, idx) => (
+                <div key={idx} className="flex items-center gap-3 p-2 text-[10px] font-bold text-slate-400">
+                  <div className="p-1.5 bg-indigo-500/10 rounded-lg text-indigo-400">
+                    <activity.icon className="w-3.5 h-3.5" />
+                  </div>
+                  {activity.label}
+                </div>
+              ))}
             </div>
           </div>
         </div>

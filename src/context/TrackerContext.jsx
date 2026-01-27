@@ -29,6 +29,9 @@ export function TrackerProvider({ children }) {
         baselineSpend: 0,
         monthlyBudget: 0,
         monthlyDrinkLimit: 0,
+        caloriesPerDrink: 150, // Default average
+        timePerDrink: 1, // Hours per drink
+        emergencyContacts: [],
         savingsGoalName: '',
         savingsGoalPrice: 0,
         reasonsForQuitting: [],
@@ -39,7 +42,15 @@ export function TrackerProvider({ children }) {
       };
       return saved ? { ...defaults, ...JSON.parse(saved) } : defaults;
     } catch (e) {
-      return { currency: '₹', name: 'User', totalXP: 0, level: 1 };
+      return {
+        currency: '₹',
+        name: 'User',
+        totalXP: 0,
+        level: 1,
+        caloriesPerDrink: 150,
+        timePerDrink: 1,
+        emergencyContacts: []
+      };
     }
   });
 
@@ -120,11 +131,21 @@ export function TrackerProvider({ children }) {
 
     const totalSober = Object.values(logs).filter(l => l.status === 'sober').length;
     const totalSpent = Object.values(logs).reduce((acc, l) => acc + (l.cost || 0), 0);
+    const totalDrinks = Object.values(logs).reduce((acc, l) => acc + (l.drinkCount || l.quantity || 0), 0);
 
     // Savings Calculation
     const trackedDaysCount = Object.keys(logs).length;
     const totalPossibleBaseline = trackedDaysCount * (settings.baselineSpend || 0);
     const totalSaved = totalPossibleBaseline - totalSpent;
+
+    // Life Gains
+    // If they hadn't quit, they would have had totalDrinks + (sober days * baseline drinks)
+    // Actually, baseline drinks isn't a setting yet, let's assume baseline drinks = baselineSpend / avgDrinkCost or just use total drinks logged vs what they'd have drunk.
+    // Let's keep it simple: Life gains based on sober days.
+    const estimatedDailyDrinks = settings.baselineSpend > 0 ? 1 : 0; // Fallback estimate
+    const totalDrinksAvoided = totalSober * estimatedDailyDrinks;
+    const caloriesSaved = totalDrinksAvoided * (settings.caloriesPerDrink || 150);
+    const timeRegained = totalDrinksAvoided * (settings.timePerDrink || 1);
 
     // Monthly Stats
     const currentMonthLogs = Object.entries(logs).filter(([dateStr]) =>
@@ -133,17 +154,24 @@ export function TrackerProvider({ children }) {
     const currentMonthSpent = currentMonthLogs.reduce((acc, [_, l]) => acc + (l.cost || 0), 0);
     const currentMonthDrinks = currentMonthLogs.reduce((acc, [_, l]) => acc + (l.drinkCount || l.quantity || 0), 0);
 
-    // Trigger Analytics
+    // Trigger & Pattern Analytics
     const triggerStats = {};
     const locationStats = {};
-    Object.values(logs).forEach(l => {
+    const weekdayRelapses = { 'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0 };
+
+    Object.entries(logs).forEach(([dateStr, l]) => {
       if (l.status === 'drank') {
         const t = l.trigger || 'Unknown';
         const loc = l.location || 'Unknown';
         triggerStats[t] = (triggerStats[t] || 0) + 1;
         locationStats[loc] = (locationStats[loc] || 0) + 1;
+
+        const dayName = format(new Date(dateStr), 'EEE');
+        weekdayRelapses[dayName] = (weekdayRelapses[dayName] || 0) + 1;
       }
     });
+
+    const hardestDay = Object.entries(weekdayRelapses).reduce((a, b) => b[1] > a[1] ? b : a)[0];
 
     const unlockedBadges = BADGES.filter(b => {
       return b.condition({ streak, totalSober, totalSaved });
@@ -154,12 +182,16 @@ export function TrackerProvider({ children }) {
       totalSober,
       totalSpent,
       totalSaved,
+      caloriesSaved,
+      timeRegained,
       currentMonthSpent,
       currentMonthDrinks,
       unlockedBadges,
       badgesDef: BADGES,
       triggerStats,
-      locationStats
+      locationStats,
+      weekdayRelapses,
+      hardestDay
     };
   };
 

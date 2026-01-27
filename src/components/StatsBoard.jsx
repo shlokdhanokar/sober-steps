@@ -1,10 +1,10 @@
 import { useTracker } from '../context/TrackerContext';
-import { Flame, Trophy, PiggyBank, Sparkles } from 'lucide-react';
+import { Flame, Trophy, PiggyBank, Sparkles, Zap, Clock, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export function StatsBoard({ onSetGoal }) {
   const { getStats, settings } = useTracker();
-  const { streak, totalSober, totalSpent, totalSaved } = getStats();
+  const { streak, totalSober, totalSpent, totalSaved, caloriesSaved, timeRegained, hardestDay } = getStats();
 
   return (
     <div className="grid grid-cols-3 gap-3 w-full max-w-md mx-auto mb-6">
@@ -123,6 +123,45 @@ export function StatsBoard({ onSetGoal }) {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Life Gains Section */}
+        {totalSober > 0 && (
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-slate-900/50 rounded-2xl p-4 border border-slate-800 flex items-center gap-3">
+              <div className="p-2 bg-amber-500/10 rounded-xl text-amber-400">
+                <Zap className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-slate-100">{caloriesSaved.toLocaleString()}</span>
+                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Cal. Saved</span>
+              </div>
+            </div>
+            <div className="bg-slate-900/50 rounded-2xl p-4 border border-slate-800 flex items-center gap-3">
+              <div className="p-2 bg-indigo-500/10 rounded-xl text-indigo-400">
+                <Clock className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-slate-100">{timeRegained.toLocaleString()}h</span>
+                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Time Gained</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Pattern Insight */}
+        {getStats().totalSpent > 0 && (
+          <div className="bg-indigo-500/5 rounded-2xl p-4 border border-indigo-500/10 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-indigo-500/10 rounded-xl text-indigo-400">
+                <AlertTriangle className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Hardest Day</p>
+                <p className="text-xs text-slate-300">Watch out for <span className="text-indigo-400 font-bold">{hardestDay}s</span>. That's your most common trigger day.</p>
+              </div>
+            </div>
           </div>
         )}
       </div>
